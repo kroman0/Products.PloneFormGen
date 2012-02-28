@@ -1,6 +1,11 @@
 Change History
 ==============
 
+1.7.1-qg 2012-02-28
+----------------
+
+- added ability to configure smtp envelope mail from address.
+
 1.7.1 2012-02-13
 ----------------
 
