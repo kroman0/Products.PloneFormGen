@@ -156,6 +156,20 @@ formMailerAdapterSchema = FormAdapterSchema.copy() + Schema((
                 """),
             ),
         ),
+    StringField('smtp_envelope_mail_from',
+        schemata='addressing',
+        searchable=0,
+        required=0,
+        read_permission=ModifyPortalContent,
+        write_permission=EDIT_ADVANCED_PERMISSION,
+        widget=StringWidget(
+            label = _(u'label_smtp_envelope_mail_from_address',
+                      default=u'SMTP Envelope MAIL FROM address'),
+            description = _(u'help_smtp_envelope_mail_from_address', default=\
+                u"""
+                """),
+            ),
+        ),
     StringField('msg_subject',
         schemata='message',
         searchable=0,
@@ -445,6 +459,33 @@ formMailerAdapterSchema = formMailerAdapterSchema + Schema((
                 Leave empty if unneeded. Your expression should evaluate as a sequence of strings.
                 PLEASE NOTE: errors in the evaluation of this expression will cause
                 an error on form display.
+            """),
+            size=70,
+        ),
+    ),
+
+    TALESString('smtp_envelope_mail_from_override',
+        schemata='overrides',
+        searchable=0,
+        required=0,
+        validators=('talesvalidator',),
+        default='',
+        write_permission=EDIT_TALES_PERMISSION,
+        read_permission=ModifyPortalContent,
+        isMetadata=True, # just to hide from base view
+        widget=StringWidget(label=\
+                            _(u'label_envelope_from_address_averride_text',
+                              default=(u"SMTP Envelope MAIL FROM address "
+                                       "Expression")),
+                           description=_(
+                u'help_envelope_from_address_averride_text', default=u"""
+                A TALES expression that will be evaluated to override any value
+                otherwise entered for the 'SMTP Envelope MAIL FROM address'
+                field. You are strongly cautioned against using unvalidated data
+                from the request for this purpose. Leave empty if unneeded.
+                Your expression should evaluate as a sequence of strings.
+                PLEASE NOTE: errors in the evaluation of this expression
+                will cause an error on form display.
             """),
             size=70,
         ),
@@ -875,15 +916,21 @@ class FormMailerAdapter(FormActionAdapter):
         # return 3-Tuple
         return (headerinfo, self.additional_headers, body)
 
-
     def send_form(self, fields, request, **kwargs):
         """Send the form.
         """
 
-        mailtext=self.get_mail_text(fields, request, **kwargs)
+        mailtext = self.get_mail_text(fields, request, **kwargs)
         host = self.MailHost
-        host.send(mailtext)
 
+        mfrom = None
+        if shasattr(self, 'smtp_envelope_mail_from_override') and \
+          self.getRawSmtp_envelope_mail_from_override():
+            mfrom = self.getSmtp_envelope_mail_from_override().strip()
+        else:
+            mfrom = self.getSmtp_envelope_mail_from()
+
+        host.send(mailtext, mfrom=mfrom)
 
     # translation and encodings
     def _site_encoding(self):

@@ -394,6 +394,30 @@ class TestFunctions(pfgtc.PloneFormGenTestCase):
             'test1@testme.com' in self.mto
         )
 
+
+    def _send_args(self, mfrom, mto, messageText, immediate=False):
+        self.send_args = locals()
+
+    def test_MailerSMTP_Envelope(self):
+        """
+        """
+        mailer = self.ff1.mailer
+        fields = self.ff1._getFieldObjects()
+        request = self.LoadRequestForm(topic='test subject',
+                                       comments='test comments')
+        mailer.setSmtp_envelope_mail_from('env@address.com')
+
+        _send = self.mailhost._send
+        self.mailhost._send = self._send_args
+        mailer.onSuccess(fields, request)
+        self.failUnless(self.send_args['mfrom'] == 'env@address.com')
+
+        mailer.setSmtp_envelope_mail_from_override('string: env_override@address.com')
+        mailer.onSuccess(fields, request)
+        self.failUnless(self.send_args['mfrom'] == 'env_override@address.com')
+        self.mailhost._send = _send
+
+
 if  __name__ == '__main__':
     framework()
 
