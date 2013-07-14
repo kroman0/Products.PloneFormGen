@@ -1,7 +1,13 @@
 Change History
 ==============
 
+1.7.12-qg (2013-07-14)
+----------------------
+
+- added ability to configure smtp envelope mail from address.
+
 1.7.12 (2013-06-20)
+-------------------
 
 - Fix exception in mailer if no recipient set. Thanks, dpc22.
   [smcmahon]
@@ -189,7 +195,6 @@ Change History
 
 - Fix selectors to work with latest jquery
   [vangheem]
-
 
 1.7.1 2012-02-13
 ----------------
